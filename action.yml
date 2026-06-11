@@ -1,0 +1,43 @@
+name: 'Firebase App Distribution'
+description: 'GitHub Action that uploads artifacts to Firebase App Distribution'
+author: 'Wojciech Zięba <@wzieba>'
+inputs:
+  appId:
+    description: 'App id can be found on the General Settings page'
+    required: true
+  token:
+    description: 'Upload token - see Firebase CLI Reference'
+    required: false
+  serviceCredentialsFile:
+    description: 'Service credentials file'
+    required: false
+  serviceCredentialsFileContent:
+    description: 'Content of service credentials file'
+    required: false
+  file:
+    description: 'Artifact to upload (.apk or .ipa)'
+    required: true
+  groups:
+    description: 'Distribution groups'
+    required: false
+  testers:
+    description: 'Distribution testers'
+    required: false
+  releaseNotes:
+    description: 'Release notes visible on release page'
+    required: false
+  releaseNotesFile:
+    description: 'Release notes visible on release page'
+    required: false    
+  debug:
+    description: 'Flag that can included to print verbose log output.'
+    required: false
+    default: false
+branding:
+  color: 'orange'
+  icon: 'send'
+runs:
+  using: 'docker'
+  image: docker://ghcr.io/wzieba/firebase-distribution-github-action@sha256:9aa8519f67390975e6d4d3a18e788df2e79354d1a25607f5f84cfe87a572a754 # sha-3379bab
+# Uncomment below for easier debugging
+# image: 'Dockerfile'
