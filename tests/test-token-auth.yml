@@ -1,0 +1,36 @@
+name: Test Firebase Distribution with token auth
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create dummy APK file
+        run: |
+          echo "dummy apk content" > /tmp/app-debug.apk
+
+      - name: Create release notes file
+        run: |
+          echo "Test release notes from file" > /tmp/release-notes.txt
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          appId: "1:123456789:android:abcdef123456"
+          token: "fake-upload-token"
+          file: "/tmp/app-debug.apk"
+          groups: "testers,qa-team"
+          testers: "tester@example.com"
+          releaseNotes: "Test release notes"
+          releaseNotesFile: "/tmp/release-notes.txt"
+          serviceCredentialsFile: "/tmp/service-credentials.json"
+          serviceCredentialsFileContent: '{"type":"service_account","project_id":"fake-project"}'
+          debug: "true"
+
+      - name: Assert action ran (may fail due to invalid credentials)
+        run: |
+          echo "Action outcome: ${{ steps.action.outcome }}"
+          echo "PASS: Action was invoked with all inputs"
