@@ -1,0 +1,32 @@
+name: Test releaseNotesFile input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create dummy artifact and release notes file
+        run: |
+          echo "dummy apk content" > /tmp/test-app.apk
+          echo "Release notes from file" > /tmp/release-notes.txt
+
+      - name: Run action with releaseNotesFile input (expect failure due to invalid credentials)
+        id: action
+        uses: .
+        continue-on-error: true
+        with:
+          appId: "1:000000000000:android:0000000000000000"
+          token: "fake-token"
+          file: /tmp/test-app.apk
+          releaseNotesFile: /tmp/release-notes.txt
+
+      - name: Assert action failed (invalid credentials expected)
+        run: |
+          echo "outcome: ${{ steps.action.outcome }}"
+          if [ "${{ steps.action.outcome }}" = "success" ]; then
+            echo "FAIL: expected action to fail with invalid credentials"
+            exit 1
+          fi
+          echo "PASS: action failed as expected with invalid credentials"

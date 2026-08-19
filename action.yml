@@ -38,6 +38,6 @@ branding:
   icon: 'send'
 runs:
   using: 'docker'
-  image: docker://ghcr.io/wzieba/firebase-distribution-github-action@sha256:9aa8519f67390975e6d4d3a18e788df2e79354d1a25607f5f84cfe87a572a754 # sha-3379bab
+  image: docker://ghcr.io/wzieba/firebase-distribution-github-action:sha-3379bab@sha256:9aa8519f67390975e6d4d3a18e788df2e79354d1a25607f5f84cfe87a572a754
 # Uncomment below for easier debugging
 # image: 'Dockerfile'

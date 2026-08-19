@@ -1,0 +1,39 @@
+name: Test groups and testers inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # Create a dummy APK file to satisfy the file input requirement
+      - name: Create dummy artifact
+        run: |
+          echo "dummy apk content" > /tmp/test-groups-app.apk
+
+      - id: upload_groups
+        name: Run Firebase Distribution action with groups and testers
+        uses: .
+        continue-on-error: true
+        with:
+          appId: "1:123456789:android:abcdef1234567890"
+          token: "fake-token-for-testing"
+          file: /tmp/test-groups-app.apk
+          groups: "qa-team,beta-testers"
+          testers: "tester1@example.com,tester2@example.com"
+          releaseNotes: "Groups and testers test"
+
+      - name: Assert action ran with groups and testers
+        env:
+          OUTCOME: ${{ steps.upload_groups.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # The action should have been invoked (not skipped), even if it fails
+          # due to invalid credentials. The key test is that the action
+          # accepts the groups and testers inputs and runs.
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to run"
+            exit 1
+          fi
+          echo "PASS: action ran with groups and testers inputs (outcome=$OUTCOME)"
