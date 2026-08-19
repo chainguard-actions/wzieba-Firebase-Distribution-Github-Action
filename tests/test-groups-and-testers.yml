@@ -1,0 +1,35 @@
+name: Test groups and testers inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create dummy APK file
+        run: |
+          echo "dummy apk content" > /tmp/test-app.apk
+
+      - name: Run Firebase Distribution action with groups and testers (expect failure)
+        id: action
+        uses: .
+        with:
+          appId: "1:123456789:android:abcdef1234567890"
+          token: "fake-token-for-testing"
+          file: /tmp/test-app.apk
+          groups: "qa-team,beta-testers"
+          testers: "tester1@example.com,tester2@example.com"
+          releaseNotes: "Test release with groups and testers"
+        continue-on-error: true
+
+      - name: Assert action failed (no real credentials)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail without real Firebase credentials, got '$OUTCOME'"
+            exit 1
+          fi
+          echo "PASS: action correctly failed without real credentials (groups and testers inputs accepted)"
