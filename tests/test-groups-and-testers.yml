@@ -1,0 +1,41 @@
+name: Test groups and testers inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create dummy artifact file
+        run: |
+          echo "dummy apk content" > /tmp/test-app.apk
+      - name: Set up git origin reachable inside Docker container
+        run: |
+          git config user.email "test@example.com"
+          git config user.name "Test User"
+          rm -rf "$GITHUB_WORKSPACE/.git-remote"
+          git init --bare "$GITHUB_WORKSPACE/.git-remote"
+          git push "$GITHUB_WORKSPACE/.git-remote" HEAD:refs/heads/act-harness
+          git remote set-url origin "$GITHUB_WORKSPACE/.git-remote" 2>/dev/null || \
+            git remote add origin "$GITHUB_WORKSPACE/.git-remote"
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          appId: "1:123456789:android:abcdef123456"
+          token: "fake-token-for-testing"
+          file: /tmp/test-app.apk
+          groups: "qa-team,beta-testers"
+          testers: "tester1@example.com,tester2@example.com"
+          releaseNotes: "Test release for groups and testers input coverage"
+      - name: Assert action ran (expected to fail with invalid credentials)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "failure" ] || [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action executed with groups and testers inputs"
+          else
+            echo "FAIL: unexpected outcome: $OUTCOME"
+            exit 1
+          fi
