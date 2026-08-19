@@ -1,4 +1,4 @@
-name: Test serviceCredentialsFile input
+name: Test releaseNotesFile input
 on:
   workflow_dispatch:
 jobs:
@@ -7,21 +7,10 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create a fake artifact file and service credentials file
+      - name: Create a fake artifact file and release notes file
         run: |
           echo "fake apk content" > /tmp/fake-app.apk
-          cat > /tmp/fake-service-credentials.json <<'EOF'
-          {
-            "type": "service_account",
-            "project_id": "fake-project",
-            "private_key_id": "fake-key-id",
-            "private_key": "-----BEGIN RSA PRIVATE KEY-----\nfake\n-----END RSA PRIVATE KEY-----\n",
-            "client_email": "fake@fake-project.iam.gserviceaccount.com",
-            "client_id": "000000000000000000000",
-            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token"
-          }
-          EOF
+          echo "Release notes from file" > /tmp/release-notes.txt
 
       - name: Set up git origin reachable inside Docker container
         run: |
@@ -38,8 +27,9 @@ jobs:
         continue-on-error: true
         with:
           appId: "1:000000000000:android:0000000000000000"
-          serviceCredentialsFile: /tmp/fake-service-credentials.json
+          token: "fake-upload-token"
           file: /tmp/fake-app.apk
+          releaseNotesFile: /tmp/release-notes.txt
 
       - name: Assert action ran (input was accepted)
         env:
@@ -52,4 +42,4 @@ jobs:
             echo "FAIL: action was skipped, input may not have been accepted"
             exit 1
           fi
-          echo "PASS: serviceCredentialsFile input was accepted by the action"
+          echo "PASS: releaseNotesFile input was accepted by the action"
