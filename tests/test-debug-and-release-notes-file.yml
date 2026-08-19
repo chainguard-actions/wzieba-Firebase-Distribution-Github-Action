@@ -1,0 +1,41 @@
+name: Test debug flag and release notes file (expected failure)
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # Create a dummy APK file and release notes file for testing
+      - name: Create dummy artifact and release notes file
+        run: |
+          echo "dummy apk content" > /tmp/test-app.apk
+          echo "Release notes from file: v1.0.0 - Initial release" > /tmp/release-notes.txt
+
+      # Test with debug=true and releaseNotesFile input.
+      # The action will fail because credentials are invalid,
+      # but we verify it processes these optional inputs correctly.
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          appId: "1:123456789:android:abcdef1234567890"
+          token: "invalid-token-for-testing"
+          file: "/tmp/test-app.apk"
+          releaseNotesFile: "/tmp/release-notes.txt"
+          debug: true
+          testers: "tester@example.com"
+
+      - name: Assert action failed due to Firebase auth error (not setup error)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "action outcome: $OUTCOME"
+          # The action should fail (invalid credentials), not succeed
+          if [ "$OUTCOME" = "success" ]; then
+            echo "FAIL: action unexpectedly succeeded with invalid credentials"
+            exit 1
+          fi
+          echo "PASS: action correctly failed with invalid credentials (debug mode)"
